@@ -1,0 +1,7 @@
+menu_icons.settings:
+  path: 'admin/config/user-interface/menu_icons'
+  defaults:
+    _form: '\Drupal\menu_icons\Form\MenuIconsSettingsForm'
+    _title: 'Menu Icon settings'
+  requirements:
+    _permission: 'administer site configuration'

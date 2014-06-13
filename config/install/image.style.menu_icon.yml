@@ -1,0 +1,12 @@
+name: menu_icon
+label: 'Menu Icon (45x45)'
+effects:
+  ddd73aa7-4bd6-4c85-b600-bdf2b1628d1d:
+    id: image_scale
+    data:
+      width: 45
+      height: 45
+      upscale: true
+    weight: 0
+    uuid: ddd73aa7-4bd6-4c85-b600-bdf2b1628d1d
+langcode: en
