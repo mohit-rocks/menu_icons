@@ -439,7 +439,16 @@ function menu_icons_css_generate() {
 
       $size = $pos == 'right' || $pos == 'left' ? $image->getWidth() : $image->getHeight();
       // Support private filesystem
-      $css .= theme('menu_icons_css_item', array('mlid' => $item->mlid, 'path' => $image_url, 'size' => $size, 'height' =>  $image->getHeight(), 'pos' => $pos, 'source' => $source_uri));
+      $menu_css = array(
+        '#theme' => 'menu_icons_css_item',
+        '#mlid' => $item->mlid,
+        '#path' => $image_url,
+        '#size' => $size,
+        '#height' => $image->getHeight(),
+        '#pos' => $pos,
+        '#source' => $source_uri
+      );
+      $css .= $menu_css;
     }
   }
   $csspath = 'public://css';
@@ -460,7 +469,8 @@ function menu_icons_theme() {
   return array(
     'menu_icons_css_item' => array(
       'variables' => array('mlid' => NULL, 'path' => NULL, 'size' => NULL, 'height' => NULL, 'pos' => NULL, 'source' => NULL),
-      'template' => 'menu_icons_css_item',
+      'template' => 'menu-icons-css-item',
+      'file' => 'menu_icon.theme.inc',
     ),
   );
 }
