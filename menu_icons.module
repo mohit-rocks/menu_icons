@@ -9,12 +9,9 @@
  * Allows users to create and organize related content in an outline.
  */
 
-use Drupal\book\BookManagerInterface;
 use Drupal\Component\Utility\String;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Render\Element;
-use Drupal\node\NodeInterface;
-use Drupal\node\NodeTypeInterface;
 use Drupal\Core\Language\Language;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Template\Attribute;
@@ -41,7 +38,7 @@ function menu_icons_theme_registry_alter(&$theme_registry) {
 /**
  * Implements hook_form_alter().
  */
-function menu_icons_form_alter(&$form, $form_state, $form_id) {
+function menu_icons_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'main_menu_link_form') {
     if (isset($form['mlid']['#value'])) {
       $options = unserialize(db_query('SELECT options FROM {menu_links} WHERE mlid = :mlid', array(':mlid' => $form['mlid']['#value']))->fetchField());
@@ -108,7 +105,7 @@ function menu_icons_form_alter(&$form, $form_state, $form_id) {
 
   // Add a custom submit callback for image style forms.
   if (in_array($form_id, array('image_style_form', 'image_effect_form', 'image_style_revert_form', 'image_style_delete_form', 'menu_icons_admin_settings'))) {
-    $form['#submit'][] = 'menu_icons_css_generate';
+    $form['actions']['submit']['#submit'][] = 'menu_icons_css_generate';
   }
 }
 
@@ -217,7 +214,6 @@ function menu_icons_form_submit($form, &$form_state) {
     'path' => $path,
     'image_style' => $form_state['values']['image_style'],
   );
-
   // Use default image style if not explicitly set.
   if (empty($options['menu_icon']['image_style'])) {
     $options['menu_icon']['image_style'] = \Drupal::config('menu_icons.settings')->get('menu_icons_image_style_default');
@@ -389,12 +385,16 @@ function menu_icons_node_form_submit($form, &$form_state) {
 /**
  * Implements hook_init().
  */
-function menu_icons_init() {
+function menu_icons_page_build(&$page) {
   $cssfile = 'public://css/menu_icons.css';
+  $css_path = file_create_url($cssfile);
   $menu_css = \Drupal::config('menu_icons.settings')->get('menu_icons_use_css');
   if ( $menu_css && file_exists($cssfile)){
-    drupal_add_css($cssfile);
+    $css_path = file_create_url($cssfile);
   }
+  $page['#attached']['css'] = array(
+    $css_path => array(),
+  );
 }
 
 /**
@@ -448,7 +448,7 @@ function menu_icons_css_generate() {
         '#pos' => $pos,
         '#source' => $source_uri
       );
-      $css .= $menu_css;
+      $css .= drupal_render($menu_css);
     }
   }
   $csspath = 'public://css';
