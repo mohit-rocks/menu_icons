@@ -43,7 +43,7 @@ class MenuIconsSettingsForm extends ConfigFormBase {
       $form['menu_icons_image_style_default'] = array(
         '#type' => 'select',
         '#title' => t('Image default style'),
-        '#default_value' => $config->get('icons.style'),
+        '#default_value' => $config->get('style'),
         '#description' => $this->t('Choose a default !link to be used for menu icons. This setting can be overwritten per menu item.', array('!link' => l(t('Image style'), 'admin/config/media/image-styles'))),
         '#required' => FALSE,
         '#options' => $options,
@@ -53,7 +53,7 @@ class MenuIconsSettingsForm extends ConfigFormBase {
     $form['menu_icons_image_folder'] = array(
       '#type' => 'textfield',
       '#title' => t('Icon folder'),
-      '#default_value' => $config->get('icons.folder'),
+      '#default_value' => $config->get('folder'),
       '#description' => $this->t('The name of the files directory in which the new uploaded icons will be stored. This folder will be created in the files directory'),
       '#required' => FALSE,
     );
@@ -61,7 +61,7 @@ class MenuIconsSettingsForm extends ConfigFormBase {
     $form['menu_icons_position'] = array(
       '#type' => 'select',
       '#title' => t('Position'),
-      '#default_value' => $config->get('icons.position'),
+      '#default_value' => $config->get('position'),
       '#options' => array(
         'top' => t('top'),
         'bottom' => t('bottom'),
@@ -74,14 +74,14 @@ class MenuIconsSettingsForm extends ConfigFormBase {
     $form['menu_icons_hide_titles'] = array(
       '#type' => 'checkbox',
       '#title' => t('Hide menu titles if icon is present'),
-      '#default_value' => $config->get('icons.title_display'),
+      '#default_value' => $config->get('title_display'),
       '#description' => $this->t('Check this to hide menu titles and display only the icon, if an icon is configured. You will need to clear the theme registry cache after changing this option for it to take effect.'),
     );
 
     $form['menu_icons_use_css'] = array(
       '#type' => 'checkbox',
       '#title' => t('Provide default CSS for placing menu icons into the menu'),
-      '#default_value' => $config->get('icons.use_css'),
+      '#default_value' => $config->get('use_css'),
       '#description' => $this->t("Advanced: uncheck this box if you do not want to enable the Menu Icon style sheet that's provided by default. If you uncheck this box, you must provide your own CSS for Menu Icons to appear!"),
     );
     $form['array_filter'] = array('#type' => 'value', '#value' => TRUE);
@@ -93,7 +93,7 @@ class MenuIconsSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, array &$form_state) {
-
+    parent::validateForm($form, $form_state);
   }
 
   /**
@@ -102,11 +102,11 @@ class MenuIconsSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, array &$form_state) {
     $this->config('menu_icons.settings')
       ->set('menu_icons_default_icon', $form_state['values']['menu_icons_default_icon'])
-      ->set('menu_icons_image_style_default', $form_state['values']['menu_icons_image_style_default'])
-      ->set('menu_icons_image_folder', $form_state['values']['menu_icons_image_folder'])
-      ->set('menu_icons_position', $form_state['values']['menu_icons_position'])
-      ->set('menu_icons_hide_titles', $form_state['values']['menu_icons_hide_titles'])
-      ->set('menu_icons_use_css', $form_state['values']['menu_icons_use_css'])
+      ->set('style', $form_state['values']['menu_icons_image_style_default'])
+      ->set('folder', $form_state['values']['menu_icons_image_folder'])
+      ->set('position', $form_state['values']['menu_icons_position'])
+      ->set('title_display', $form_state['values']['menu_icons_hide_titles'])
+      ->set('use_css', $form_state['values']['menu_icons_use_css'])
       ->save();
     parent::submitForm($form, $form_state);
   }

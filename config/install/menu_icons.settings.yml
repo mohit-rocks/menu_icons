@@ -1,7 +1,6 @@
-icons:
-  position: left
-  folder: menu_icons
-  style: menu_icon
-  menu_icons_default_icon: modules/contrib/menu_icons/images/default_icon.png
-  title_display : 1
-  use_css : TRUE
+position: left
+folder: menu_icons
+style: menu_icon
+menu_icons_default_icon: modules/contrib/menu_icons/images/default_icon.png
+title_display : 1
+use_css : TRUE
