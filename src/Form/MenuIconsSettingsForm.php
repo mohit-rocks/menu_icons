@@ -29,7 +29,7 @@ class MenuIconsSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => t('Icon path'),
       '#required' => FALSE,
-      '#default_value' => $config->get('menu_icons_default_icon'),
+      '#default_value' => $config->get('default_icon'),
       '#description' => $this->t('A Drupal path to the icon or image to use as a default.'),
     );
 

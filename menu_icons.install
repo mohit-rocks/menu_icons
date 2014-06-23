@@ -10,12 +10,12 @@
  */
 function menu_icons_uninstall() {
 
-  \Drupal::config('menu_icons.settings')->clear('menu_icons_default_icon')->save();
-  \Drupal::config('menu_icons.settings')->clear('menu_icons_image_style_default')->save();
-  \Drupal::config('menu_icons.settings')->clear('menu_icons_image_folder')->save();
-  \Drupal::config('menu_icons.settings')->clear('menu_icons_position')->save();
-  \Drupal::config('menu_icons.settings')->clear('menu_icons_hide_titles')->save();
-  \Drupal::config('menu_icons.settings')->clear('menu_icons_use_css')->save();
+  \Drupal::config('menu_icons.settings')->clear('default_icon')->save();
+  \Drupal::config('menu_icons.settings')->clear('image_style_default')->save();
+  \Drupal::config('menu_icons.settings')->clear('image_folder')->save();
+  \Drupal::config('menu_icons.settings')->clear('position')->save();
+  \Drupal::config('menu_icons.settings')->clear('hide_titles')->save();
+  \Drupal::config('menu_icons.settings')->clear('use_css')->save();
 
   // Clean up menu link options.
   // Fetch menu links that we've modified.
