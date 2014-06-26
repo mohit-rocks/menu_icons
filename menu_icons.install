@@ -6,6 +6,15 @@
  */
 
 /**
+ * Implements hook_install().
+ */
+function menu_icons_install() {
+
+  // This should be executed after menu_ui modules.
+  // Because menu_ui added form for menu item, which is used by this module.
+  module_set_weight('menu_icons', 50);
+}
+/**
  * Implements hook_uninstall().
  */
 function menu_icons_uninstall() {

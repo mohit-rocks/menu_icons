@@ -141,7 +141,6 @@ function menu_icons_form_article_node_edit_form_alter(&$form, &$form_state, $for
       '#tree' => FALSE,
       '#description' => t('Check this if you want this icon to be used.'),
     );
-
     $form['menu']['icon']['image_style'] = array(
       '#title' => t('Image style'),
       '#type' => 'select',
@@ -151,7 +150,6 @@ function menu_icons_form_article_node_edit_form_alter(&$form, &$form_state, $for
       '#description' => t('The preview image will be shown while editing the content.'),
       '#required' => FALSE,
     );
-
     $form['menu']['icon']['icon_path'] = array(
       '#type' => 'textfield',
       '#title' => t('Path to the icon'),
@@ -175,9 +173,8 @@ function menu_icons_form_article_node_edit_form_alter(&$form, &$form_state, $for
           ),
         ),
     );
-
     $form['#attributes']['enctype'] = 'multipart/form-data';
-    $form['#submit'][] = 'menu_icons_node_form_submit';
+    $form['actions']['submit']['#submit'][] = 'menu_icons_node_form_submit';
   }
 }
 
@@ -379,6 +376,8 @@ function menu_icons_node_form_submit($form, &$form_state) {
   }
 
   $form_state['values']['menu']['icon'] = $options['menu_icon'];
+  var_dump($form_state['values']['menu']['icon']);
+  die;
 }
 
 
