@@ -110,9 +110,13 @@ function menu_icons_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- * Implements hook_form_FORMID_alter().
+ * Implements hook_form_BASE_FORM_ID_alter().
+ *
+ * Adds menu item fields to the node form.
+ *
+ * @see menu_icons_node_submit()
  */
-function menu_icons_form_article_node_edit_form_alter(&$form, &$form_state, $form_id) {
+function menu_icons_form_node_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form['advanced'])) {
     if ($form['menu']['link']['mlid']['#value']) {
       $options = unserialize(db_query('SELECT options FROM {menu_links} WHERE mlid = :mlid', array(':mlid' => $form['menu']['link']['mlid']['#value']))->fetchField());
@@ -173,8 +177,6 @@ function menu_icons_form_article_node_edit_form_alter(&$form, &$form_state, $for
           ),
         ),
     );
-    $form['#attributes']['enctype'] = 'multipart/form-data';
-    $form['actions']['submit']['#submit'][] = 'menu_icons_node_form_submit';
   }
 }
 
@@ -267,7 +269,7 @@ function menu_icons_node_update($node) {
  * Helper for hook_node_insert() and hook_node_update().
  */
 function menu_icons_node_save($node) {
-  if (isset($node->menu['icon']) && $node->menu['icon']['enable']) {
+  /*if (isset($node->menu['icon']) && $node->menu['icon']['enable']) {
     // Check the destination folder, attempt to create it if it does't exist
     $directory_path = menu_icons_directory_path();
     file_prepare_directory($directory_path, FILE_CREATE_DIRECTORY);
@@ -275,8 +277,12 @@ function menu_icons_node_save($node) {
     // Take the current icon path
     $path = $node->menu['icon']['path'];
     $file = FALSE;
+    // Define the validation settings
+    $validators = array(
+      'file_validate_is_image' => array(),
+    );
     if (!empty($path)) {
-      $file = image_load($path);
+      $file = file_save_upload('icon_upload',  $validators, $directory_path, 0, $form_state['values']['icon_upload']);
     }
     if ($file) {
       // Move temporary file to it's destination.
@@ -327,7 +333,6 @@ function menu_icons_node_save($node) {
         ))
         ->condition('mlid', $node->menu['mlid'])
         ->execute();
-
         // Regenerate the css file
         menu_icons_css_generate();
 
@@ -335,13 +340,15 @@ function menu_icons_node_save($node) {
         drupal_set_message(t('A new menu icon has been set for this node. Please refresh the page to view it.'));
       }
     }
-  }
+  }*/
 }
 
 /**
+ * Implements hook_node_submit().
  *
+ * @see menu_icons_form_node_form_alter()
  */
-function menu_icons_node_form_submit($form, &$form_state) {
+function menu_icons_node_submit(EntityInterface $node, $form, $form_state) {
   // Check the destination folder, attempt to create it if it does't exist
   $directory_path = menu_icons_directory_path();
   file_prepare_directory($directory_path, FILE_CREATE_DIRECTORY);
@@ -349,24 +356,27 @@ function menu_icons_node_form_submit($form, &$form_state) {
   // Store the current icon path
   $path = $form_state['values']['menu']['icon']['icon_path'];
 
+  var_dump($form_state['values']['menu']);
   // Define the validation settings
-  $validate = array(
+  $validators = array(
     'file_validate_is_image' => array(),
   );
-
+  $file = file_save_upload('icon_upload',  $validators, $directory_path, 0, $form_state['values']['menu']['icon']['icon_upload']);
   // Check for a new uploaded icon, and use that instead.
-  if ($file = file_save_upload('menu', $validate)) {
-    $parts = pathinfo($file->filename);
-    $filename = $directory_path . '/menu_icon_temp_' . time() . '.' . $parts['extension'];
-    file_unmanaged_copy($file->uri, $filename, FILE_EXISTS_REPLACE);
+  if ($file = file_save_upload('icon_upload',  $validators, $directory_path, 0, $form_state['values']['menu']['icon']['icon_upload'])) {
+
+    $parts = pathinfo($file->getFilename());
+    $filename = $directory_path . '/menu_icon_' . $form_state['values']['menu']['mlid'] . '.' . $parts['extension'];
+    file_unmanaged_copy($file->getFileUri(), $filename, FILE_EXISTS_REPLACE);
+
     // Flush image style generated images
     image_path_flush($filename);
     $path = $filename;
   }
 
-  $options = array();
+  $options = unserialize(db_query('SELECT options FROM {menu_links} WHERE mlid = :mlid', array(':mlid' => $form_state['values']['menu']['mlid']))->fetchField());
   $options['menu_icon'] = array(
-    'enable' => $form_state['values']['use_icon_logo'],
+    'enable' => $form_state['values']['menu']['icon']['use_icon_logo'],
     'path' => $path,
     'image_style' => $form_state['values']['menu']['icon']['image_style'],
   );
@@ -375,9 +385,39 @@ function menu_icons_node_form_submit($form, &$form_state) {
     $options['menu_icon']['image_style'] = \Drupal::config('menu_icons.settings')->get('style');
   }
 
+  if (!isset($options['attributes'])) {
+    $options['attributes'] = array();
+  }
+  if (!isset($options['attributes']['class'])) {
+    $options['attributes']['class'] = array();
+  }
+
+  $classes = array();
+  $classes[] = "menu_icon";
+  $classes[] = "menu-" . $form_state['values']['mlid'];
+  if ($options['menu_icon']['enable'] && !empty($options['menu_icon']['path']) && file_exists($options['menu_icon']['path'])) {
+    foreach ($classes as $class) {
+      if (!in_array($class, $options['attributes']['class'])) {
+        $options['attributes']['class'][] = $class;
+      }
+    }
+  }
+
+  if (empty($options['attributes']['class'])) {
+    unset($options['attributes']['class']);
+  }
+
+  db_update('menu_links')
+  ->fields(array(
+    'options' => serialize($options),
+  ))
+  ->condition('mlid', $form_state['values']['mlid'])
+  ->execute();
+  // Regenerate the css file
+  menu_icons_css_generate();
+  $node->menu['icon']['enable'] = $form_state['values']['use_icon_logo'];
+  $node->menu['icon']['path'] = $path;
   $form_state['values']['menu']['icon'] = $options['menu_icon'];
-  var_dump($form_state['values']['menu']['icon']);
-  die;
 }
 
 
