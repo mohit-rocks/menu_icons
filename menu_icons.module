@@ -110,77 +110,6 @@ function menu_icons_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- * Implements hook_form_BASE_FORM_ID_alter().
- *
- * Adds menu item fields to the node form.
- *
- * @see menu_icons_node_submit()
- */
-function menu_icons_form_node_form_alter(&$form, &$form_state, $form_id) {
-  if (isset($form['advanced'])) {
-    if ($form['menu']['link']['mlid']['#value']) {
-      $options = unserialize(db_query('SELECT options FROM {menu_links} WHERE mlid = :mlid', array(':mlid' => $form['menu']['link']['mlid']['#value']))->fetchField());
-    }
-    if (!isset($options) || !isset($options['menu_icon'])) {
-      $options = array('menu_icon' => array('enable' => NULL, 'image_style' => NULL));
-    }
-
-    $form['menu']['icon'] = array(
-      '#type' => 'fieldset',
-      '#weight' => 5,
-      '#title' => t('Menu icon settings'),
-      '#description' => t('If checked, the following icon will be used as background image for this menu item.'),
-      '#collapsible' => TRUE,
-      '#collapsed' => !$options['menu_icon']['enable'],
-      '#states' => array(
-        'invisible' => array(
-          ':input[name="menu[enabled]"]' => array('checked' => FALSE),
-          ),
-        ),
-    );
-    $form['menu']['icon']['use_icon_logo'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Use an icon'),
-      '#default_value' => $options['menu_icon']['enable'],
-      '#tree' => FALSE,
-      '#description' => t('Check this if you want this icon to be used.'),
-    );
-    $form['menu']['icon']['image_style'] = array(
-      '#title' => t('Image style'),
-      '#type' => 'select',
-      '#options' => image_style_options(FALSE),
-      '#empty_option' => '<' . t('Menu Icons default') . '>',
-      '#default_value' => $options['menu_icon']['image_style'],
-      '#description' => t('The preview image will be shown while editing the content.'),
-      '#required' => FALSE,
-    );
-    $form['menu']['icon']['icon_path'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Path to the icon'),
-      '#default_value' => (isset($options['menu_icon']['path']) ? $options['menu_icon']['path'] : \Drupal::config('menu_icons.settings')->get('menu_icons_default_icon')),
-      '#description' => t('The path to the image you would like to use as a background image for this menu item.'),
-    );
-    $form['menu']['icon']['icon_path']['#states'] = array(
-        'visible' => array (
-        ':input[name="use_icon_logo"]' => array('checked' => TRUE),
-      ),
-    );
-
-    $form['menu']['icon']['icon_upload'] = array(
-      '#type' => 'file',
-      '#title' => t('Upload a new icon image'),
-      '#maxlength' => 40,
-      '#description' => t("If you don't have direct file access to the server, use this field to upload your icon."),
-      '#states' => array(
-        'visible' => array (
-          ':input[name="use_icon_logo"]' => array('checked' => TRUE),
-          ),
-        ),
-    );
-  }
-}
-
-/**
  * Process the submitted form
  */
 function menu_icons_form_submit($form, &$form_state) {
@@ -250,6 +179,78 @@ function menu_icons_form_submit($form, &$form_state) {
   menu_icons_css_generate();
 }
 
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ *
+ * Adds menu item fields to the node form.
+ *
+ * @see menu_icons_node_submit()
+ */
+function menu_icons_form_node_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['advanced'])) {
+    if ($form['menu']['link']['mlid']['#value']) {
+      $options = unserialize(db_query('SELECT options FROM {menu_links} WHERE mlid = :mlid', array(':mlid' => $form['menu']['link']['mlid']['#value']))->fetchField());
+    }
+    if (!isset($options) || !isset($options['menu_icon'])) {
+      $options = array('menu_icon' => array('enable' => NULL, 'image_style' => NULL));
+    }
+
+    $form['menu']['icon'] = array(
+      '#type' => 'fieldset',
+      '#weight' => 5,
+      '#title' => t('Menu icon settings'),
+      '#description' => t('If checked, the following icon will be used as background image for this menu item.'),
+      '#collapsible' => TRUE,
+      '#collapsed' => !$options['menu_icon']['enable'],
+      '#states' => array(
+        'invisible' => array(
+          ':input[name="menu[enabled]"]' => array('checked' => FALSE),
+          ),
+        ),
+    );
+    $form['menu']['icon']['use_icon_logo'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Use an icon'),
+      '#default_value' => $options['menu_icon']['enable'],
+      '#tree' => FALSE,
+      '#description' => t('Check this if you want this icon to be used.'),
+    );
+    $form['menu']['icon']['image_style'] = array(
+      '#title' => t('Image style'),
+      '#type' => 'select',
+      '#options' => image_style_options(FALSE),
+      '#empty_option' => '<' . t('Menu Icons default') . '>',
+      '#default_value' => $options['menu_icon']['image_style'],
+      '#description' => t('The preview image will be shown while editing the content.'),
+      '#required' => FALSE,
+    );
+    $form['menu']['icon']['icon_path'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Path to the icon'),
+      '#default_value' => (isset($options['menu_icon']['path']) ? $options['menu_icon']['path'] : \Drupal::config('menu_icons.settings')->get('menu_icons_default_icon')),
+      '#description' => t('The path to the image you would like to use as a background image for this menu item.'),
+    );
+    $form['menu']['icon']['icon_path']['#states'] = array(
+        'visible' => array (
+        ':input[name="use_icon_logo"]' => array('checked' => TRUE),
+      ),
+    );
+
+    $form['menu']['icon']['icon_upload'] = array(
+      '#type' => 'file',
+      '#title' => t('Upload a new icon image'),
+      '#maxlength' => 40,
+      '#description' => t("If you don't have direct file access to the server, use this field to upload your icon."),
+      '#states' => array(
+        'visible' => array (
+          ':input[name="use_icon_logo"]' => array('checked' => TRUE),
+          ),
+        ),
+    );
+  }
+  $form['actions']['submit']['#submit'][] = 'menu_icons_form_node_form_submit';
+}
+
 
 /**
  * Implements hook_node_insert().
@@ -269,7 +270,7 @@ function menu_icons_node_update($node) {
  * Helper for hook_node_insert() and hook_node_update().
  */
 function menu_icons_node_save($node) {
-  /*if (isset($node->menu['icon']) && $node->menu['icon']['enable']) {
+  if (isset($node->menu['icon']) && $node->menu['icon']['enable']) {
     // Check the destination folder, attempt to create it if it does't exist
     $directory_path = menu_icons_directory_path();
     file_prepare_directory($directory_path, FILE_CREATE_DIRECTORY);
@@ -340,15 +341,17 @@ function menu_icons_node_save($node) {
         drupal_set_message(t('A new menu icon has been set for this node. Please refresh the page to view it.'));
       }
     }
-  }*/
+  }
 }
 
 /**
- * Implements hook_node_submit().
+ * Custom submit handler for the node form to save menu icons settings.
  *
  * @see menu_icons_form_node_form_alter()
  */
-function menu_icons_node_submit(EntityInterface $node, $form, $form_state) {
+function menu_icons_form_node_form_submit(&$form, $form_state) {
+  print 'coming';
+  die;
   // Check the destination folder, attempt to create it if it does't exist
   $directory_path = menu_icons_directory_path();
   file_prepare_directory($directory_path, FILE_CREATE_DIRECTORY);
