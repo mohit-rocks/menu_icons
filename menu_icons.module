@@ -11,6 +11,8 @@
 
 use Drupal\Component\Utility\String;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Language\Language;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
@@ -36,72 +38,73 @@ function menu_icons_theme_registry_alter(&$theme_registry) {
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_BASE_FORM_ID_alter().
  */
-function menu_icons_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'main_menu_link_form') {
-    if (isset($form['mlid']['#value'])) {
-      $options = unserialize(db_query('SELECT options FROM {menu_links} WHERE mlid = :mlid', array(':mlid' => $form['mlid']['#value']))->fetchField());
-    }
-    if (!isset($options) || !isset($options['menu_icon'])) {
-      $options = array('menu_icon' => array('enable' => NULL, 'image_style' => NULL));
-    }
+function menu_icons_form_menu_link_content_form_alter(&$form, &$form_state) {
 
-    $form['icon'] = array(
-      '#type' => 'fieldset',
-      '#weight' => 5,
-      '#title' => t('Menu icon settings'),
-      '#description' => t('If checked, the following icon will be used as background image for this menu item.'),
-      '#attributes' => array('classes' => array('theme-settings-bottom')),
-    );
-    $form['icon']['use_icon_logo'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Use an icon'),
-      '#default_value' => $options['menu_icon']['enable'],
-      '#tree' => FALSE,
-      '#description' => t('Check this if you want this icon to be used.'),
-    );
-
-    $form['icon']['image_style'] = array(
-      '#title' => t('Image style'),
-      '#type' => 'select',
-      '#options' => image_style_options(FALSE),
-      '#empty_option' => '<' . t('Menu Icons default') . '>',
-      '#default_value' => $options['menu_icon']['image_style'],
-      '#description' => t('The preview image will be shown while editing the content.'),
-      '#required' => FALSE,
-    );
-
-    $form['icon']['icon_path'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Path to the icon'),
-      '#default_value' => (isset($options['menu_icon']['path']) ? $options['menu_icon']['path'] : \Drupal::config('menu_icons.settings')->get('menu_icons_default_icon')),
-      '#description' => t('The path to the image you would like to use as a background image for this menu item.'),
-    );
-    $form['icon']['icon_path']['#states'] = array(
-        'visible' => array (
-        ':input[name="use_icon_logo"]' => array('checked' => TRUE),
-      ),
-    );
-
-    $form['icon']['icon_upload'] = array(
-      '#type' => 'file',
-      '#title' => t('Upload a new icon image'),
-      '#maxlength' => 40,
-      '#description' => t("If you don't have direct file access to the server, use this field to upload your icon."),
-    );
-    $form['icon']['icon_upload']['#states'] = array(
-        'visible' => array (
-        ':input[name="use_icon_logo"]' => array('checked' => TRUE),
-      ),
-    );
-
-    $form['submit']['#weight'] = 9;
-    $form['delete']['#weight'] = 10;
-
-    $form['#attributes']['enctype'] = 'multipart/form-data';
-    $form['actions']['submit']['#submit'][] = 'menu_icons_form_submit';
+  /*var_dump($form);
+  if (isset($form['id']['#value'])) {
+    $options = unserialize(db_query('SELECT options FROM {menu_links} WHERE id = :id', array(':id' => $form['mlid']['#value']))->fetchField());
   }
+  if (!isset($options) || !isset($options['menu_icon'])) {
+    $options = array('menu_icon' => array('enable' => NULL, 'image_style' => NULL));
+  }*/
+  var_dump($entity);
+  die;
+  $form['icon'] = array(
+    '#type' => 'fieldset',
+    '#weight' => 5,
+    '#title' => t('Menu icon settings'),
+    '#description' => t('If checked, the following icon will be used as background image for this menu item.'),
+    '#attributes' => array('classes' => array('theme-settings-bottom')),
+  );
+  $form['icon']['use_icon_logo'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use an icon'),
+    '#default_value' => $options['menu_icon']['enable'],
+    '#tree' => FALSE,
+    '#description' => t('Check this if you want this icon to be used.'),
+  );
+
+  $form['icon']['image_style'] = array(
+    '#title' => t('Image style'),
+    '#type' => 'select',
+    '#options' => image_style_options(FALSE),
+    '#empty_option' => '<' . t('Menu Icons default') . '>',
+    '#default_value' => $options['menu_icon']['image_style'],
+    '#description' => t('The preview image will be shown while editing the content.'),
+    '#required' => FALSE,
+  );
+
+  $form['icon']['icon_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Path to the icon'),
+    '#default_value' => (isset($options['menu_icon']['path']) ? $options['menu_icon']['path'] : \Drupal::config('menu_icons.settings')->get('menu_icons_default_icon')),
+    '#description' => t('The path to the image you would like to use as a background image for this menu item.'),
+  );
+  $form['icon']['icon_path']['#states'] = array(
+      'visible' => array (
+      ':input[name="use_icon_logo"]' => array('checked' => TRUE),
+    ),
+  );
+
+  $form['icon']['icon_upload'] = array(
+    '#type' => 'file',
+    '#title' => t('Upload a new icon image'),
+    '#maxlength' => 40,
+    '#description' => t("If you don't have direct file access to the server, use this field to upload your icon."),
+  );
+  $form['icon']['icon_upload']['#states'] = array(
+      'visible' => array (
+      ':input[name="use_icon_logo"]' => array('checked' => TRUE),
+    ),
+  );
+
+  $form['submit']['#weight'] = 9;
+  $form['delete']['#weight'] = 10;
+
+  $form['#attributes']['enctype'] = 'multipart/form-data';
+  $form['actions']['submit']['#submit'][] = 'menu_icons_form_submit';
 
   // Add a custom submit callback for image style forms.
   if (in_array($form_id, array('image_style_form', 'image_effect_form', 'image_style_revert_form', 'image_style_delete_form'))) {
@@ -118,17 +121,17 @@ function menu_icons_form_submit($form, &$form_state) {
   file_prepare_directory($directory_path, FILE_CREATE_DIRECTORY);
 
   // Store the current icon path
-  $path = $form_state['values']['icon_path'];
+  $path = $form_state->getValue('icon_path');
 
   // Define the validation settings
   $validators = array(
     'file_validate_is_image' => array(),
   );
   // Check for a new uploaded icon, and use that instead.
-  if ($file = file_save_upload('icon_upload',  $validators, $directory_path, 0, $form_state['values']['icon_upload'])) {
+  if ($file = file_save_upload('icon_upload',  $validators, $directory_path, 0, $form_state->getValue('icon_upload'))) {
 
     $parts = pathinfo($file->getFilename());
-    $filename = $directory_path . '/menu_icon_' . $form_state['values']['mlid'] . '.' . $parts['extension'];
+    $filename = $directory_path . '/menu_icon_' . $form_state['values']['id'] . '.' . $parts['extension'];
     file_unmanaged_copy($file->getFileUri(), $filename, FILE_EXISTS_REPLACE);
 
     // Flush image style generated images
@@ -136,11 +139,11 @@ function menu_icons_form_submit($form, &$form_state) {
     $path = $filename;
   }
 
-  $options = unserialize(db_query('SELECT options FROM {menu_links} WHERE mlid = :mlid', array(':mlid' => $form_state['values']['mlid']))->fetchField());
+  $options = unserialize(db_query('SELECT options FROM {menu_link_content_data} WHERE id = :id', array(':id' => $form_state->getValue('id')))->fetchField());
   $options['menu_icon'] = array(
-    'enable' => $form_state['values']['use_icon_logo'],
+    'enable' => $form_state->getValue('use_icon_logo'),
     'path' => $path,
-    'image_style' => $form_state['values']['image_style'],
+    'image_style' => $form_state->getValue('image_style'),
   );
   // Use default image style if not explicitly set.
   if (empty($options['menu_icon']['image_style'])) {
@@ -169,11 +172,11 @@ function menu_icons_form_submit($form, &$form_state) {
     unset($options['attributes']['class']);
   }
 
-  db_update('menu_links')
+  db_update('menu_link_content_data')
   ->fields(array(
     'options' => serialize($options),
   ))
-  ->condition('mlid', $form_state['values']['mlid'])
+  ->condition('id', $form_state['values']['id'])
   ->execute();
   // Regenerate the css file
   menu_icons_css_generate();

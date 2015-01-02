@@ -6,6 +6,8 @@
 namespace Drupal\menu_icons\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 
 /**
  * Configure book settings for this site.
@@ -22,9 +24,9 @@ class MenuIconsSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, array &$form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state) {
 
-    $config = \Drupal::config('menu_icons.settings');
+    $config = $this->config('menu_icons.settings');
     $form['menu_icons_default_icon'] = array(
       '#type' => 'textfield',
       '#title' => t('Icon path'),
@@ -36,7 +38,7 @@ class MenuIconsSettingsForm extends ConfigFormBase {
     $options = array();
     $image_styles = \Drupal::entityManager()->getStorage('image_style')->loadMultiple();
     foreach ($image_styles as $style) {
-      $options[$style->name] = $style->label;
+      $options[$style->getName()] = $style->label();
     }
 
     if (!empty($options)) {
@@ -44,7 +46,7 @@ class MenuIconsSettingsForm extends ConfigFormBase {
         '#type' => 'select',
         '#title' => t('Image default style'),
         '#default_value' => $config->get('style'),
-        '#description' => $this->t('Choose a default !link to be used for menu icons. This setting can be overwritten per menu item.', array('!link' => l(t('Image style'), 'admin/config/media/image-styles'))),
+        '#description' => $this->t('Choose a default !link to be used for menu icons. This setting can be overwritten per menu item.', array('!link' => \Drupal::l(t('Image style'), new Url('image.style_list')))),
         '#required' => FALSE,
         '#options' => $options,
       );
@@ -92,21 +94,21 @@ class MenuIconsSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, array &$form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, array &$form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config('menu_icons.settings')
-      ->set('menu_icons_default_icon', $form_state['values']['menu_icons_default_icon'])
-      ->set('style', $form_state['values']['menu_icons_image_style_default'])
-      ->set('folder', $form_state['values']['menu_icons_image_folder'])
-      ->set('position', $form_state['values']['menu_icons_position'])
-      ->set('title_display', $form_state['values']['menu_icons_hide_titles'])
-      ->set('use_css', $form_state['values']['menu_icons_use_css'])
+      ->set('menu_icons_default_icon', $form_state->getValue('menu_icons_default_icon'))
+      ->set('style', $form_state->getValue('menu_icons_image_style_default'))
+      ->set('folder', $form_state->getValue('menu_icons_image_folder'))
+      ->set('position', $form_state->getValue('menu_icons_position'))
+      ->set('title_display', $form_state->getValue('menu_icons_hide_titles'))
+      ->set('use_css', $form_state->getValue('menu_icons_use_css'))
       ->save();
     parent::submitForm($form, $form_state);
   }
