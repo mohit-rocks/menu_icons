@@ -20,6 +20,12 @@ class MenuIconsSettingsForm extends ConfigFormBase {
   public function getFormId() {
     return 'menu_icons_admin_settings';
   }
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEditableConfigNames() {
+    return ['menu_icons.settings'];
+  }
 
   /**
    * {@inheritdoc}
