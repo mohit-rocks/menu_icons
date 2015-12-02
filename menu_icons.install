@@ -19,19 +19,14 @@ function menu_icons_install() {
  */
 function menu_icons_uninstall() {
 
-  \Drupal::config('menu_icons.settings')->clear('default_icon')->save();
-  \Drupal::config('menu_icons.settings')->clear('image_style_default')->save();
-  \Drupal::config('menu_icons.settings')->clear('image_folder')->save();
-  \Drupal::config('menu_icons.settings')->clear('position')->save();
-  \Drupal::config('menu_icons.settings')->clear('hide_titles')->save();
-  \Drupal::config('menu_icons.settings')->clear('use_css')->save();
+  \Drupal::state()->delete('menu_icons.settings');
 
   // Clean up menu link options.
   // Fetch menu links that we've modified.
-  $result = db_query("SELECT mlid, options FROM {menu_links} WHERE options LIKE '%menu_icon%'");
+  $result = db_query("SELECT id, link__options FROM {menu_link_content_data} WHERE link__options LIKE '%menu_icon%'");
   foreach ($result as $record) {
-    $mlid = $record->mlid;
-    $options = unserialize($record->options);
+    $mlid = $record->id;
+    $options = unserialize($record->link__options);
     if (isset($options['menu_icon'])) {
       unset($options['menu_icon']);
     }
@@ -44,11 +39,11 @@ function menu_icons_uninstall() {
       }
     }
     // Save the updated options.
-    db_update('menu_links')
+    db_update('menu_link_content_data')
     ->fields(array(
-      'options' => serialize($options),
+      'link__options' => serialize($options),
     ))
-    ->condition('mlid', $mlid)
+    ->condition('id', $mlid)
     ->execute();
   }
 
